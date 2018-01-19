@@ -92,12 +92,10 @@ private:
 				if (result == NULL) {
 					break;
 				} 
-				if (*result == '\0') {
-					rl_free(result);
-					break;
+				if (*result != '\0') {
+					line = convertUtf8StringToTtstr(result, strlen(result));
+					add_history(result);
 				}
-				line = convertUtf8StringToTtstr(result, strlen(result));
-				add_history(result);
 				rl_free(result);
 			}
 			// 中断つき待機
@@ -137,15 +135,12 @@ static MyConsole *console;
 
 void PreRegisterCallback()
 {
-	TVPAddImportantLog(ttstr("------ replxx Copyright START ------"));
+	TVPAddImportantLog(ttstr("------ wineditline Copyright START ------"));
 	TVPAddImportantLog(ttstr(license_text));
-	TVPAddImportantLog(ttstr("------ replxx Copyright END ------"));
-	if (::AttachConsole(-1)) {
-		// 標準入出力を再接続
+	TVPAddImportantLog(ttstr("------ wineditline Copyright END ------"));
+
+	if (::AttachConsole(-1) || ::GetLastError() == ERROR_ACCESS_DENIED) {
 		TVPAddImportantLog("attach console success");
-		freopen("CON", "r", stdin); 
-		freopen("CON", "w", stdout); 
-		freopen("CON", "w", stderr); 
 		console = new MyConsole();
 	} else {
 		TVPAddImportantLog("attach console failed");
@@ -159,9 +154,7 @@ void PostUnRegisterCallback()
 {
 	if (console) {
 		TVPRemoveContinuousEventHook(console);
-		freopen("NUL", "r", stdin); 
-		freopen("NUL", "w", stdout); 
-		freopen("NUL", "w", stderr); 
+		::FreeConsole();
 		delete console;
 		console = 0;
 	}
