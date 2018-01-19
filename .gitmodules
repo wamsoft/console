@@ -1,0 +1,3 @@
+[submodule "wineditline"]
+	path = wineditline
+	url = git@github.com:winlibs/wineditline.git
